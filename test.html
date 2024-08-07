@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Form with Tabs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .hidden {
+            display: none;
+        }
+        .tab-content > div {
+            display: none;
+        }
+        .tab-content > div.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-6">
+    <h1 class="text-3xl font-bold mb-6 text-center">Dynamic Form with Tabs</h1>
+
+    <ul class="tabs flex border-b mb-6" id="tabs">
+        <li class="mr-1"><a href="#page1" class="bg-white inline-block py-2 px-4 text-blue-500 font-semibold" onclick="showPage(event, 'page1')">Page 1</a></li>
+    </ul>
+
+    <div class="tab-content" id="tab-content">
+        <div id="page1" class="page active bg-white p-4 rounded shadow">
+            <h2 class="text-2xl font-bold mb-4">Page 1</h2>
+            <form class="space-y-4">
+                <div>
+                    <label for="name1" class="block text-lg font-medium">Name:</label>
+                    <input type="text" id="name1" name="name1" required class="mt-1 block w-full p-2 border border-gray-300 rounded">
+                </div>
+
+                <div>
+                    <label for="email1" class="block text-lg font-medium">Email:</label>
+                    <input type="email" id="email1" name="email1" required class="mt-1 block w-full p-2 border border-gray-300 rounded">
+                </div>
+
+                <table id="table1" class="w-full mt-4 border border-gray-300">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="p-2 border border-gray-300">Column 1</th>
+                            <th class="p-2 border border-gray-300">Column 2</th>
+                            <th class="p-2 border border-gray-300">Column 3</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="p-2 border border-gray-300"><input type="text" name="col1_1" required class="w-full p-2 border border-gray-300 rounded"></td>
+                            <td class="p-2 border border-gray-300"><input type="text" name="col2_1" required class="w-full p-2 border border-gray-300 rounded"></td>
+                            <td class="p-2 border border-gray-300"><input type="text" name="col3_1" required class="w-full p-2 border border-gray-300 rounded"></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="flex space-x-4 mt-4">
+                    <button type="button" onclick="addRow(1)" class="bg-blue-500 text-white px-4 py-2 rounded">Add Row</button>
+                    <button type="button" onclick="addColumn(1)" class="bg-blue-500 text-white px-4 py-2 rounded">Add Column</button>
+                    <button type="button" onclick="removePage(1)" class="bg-red-500 text-white px-4 py-2 rounded">Remove Page</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="flex space-x-4 mt-6">
+        <input type="text" id="newPageName" placeholder="New Page Name" class="p-2 border border-gray-300 rounded">
+        <button type="button" onclick="addPage()" class="bg-green-500 text-white px-4 py-2 rounded">Add Page</button>
+        <button type="button" onclick="submitAll()" class="bg-blue-500 text-white px-4 py-2 rounded">Submit All</button>
+    </div>
+
+    <script>
+        let pageCount = 1;
+
+        function addRow(pageNumber) {
+            const table = document.getElementById(`table${pageNumber}`);
+            const newRow = table.insertRow();
+            const columns = table.rows[0].cells.length;
+
+            for (let i = 0; i < columns; i++) {
+                const newCell = newRow.insertCell(i);
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.name = `col${i + 1}_${table.rows.length - 1}`;
+                input.required = true;
+                input.className = 'w-full p-2 border border-gray-300 rounded';
+                newCell.appendChild(input);
+            }
+        }
+
+        function addColumn(pageNumber) {
+            const table = document.getElementById(`table${pageNumber}`);
+            const headerRow = table.rows[0];
+            const newHeaderCell = document.createElement('th');
+            const newColNumber = headerRow.cells.length + 1;
+            newHeaderCell.innerText = `Column ${newColNumber}`;
+            newHeaderCell.className = 'p-2 border border-gray-300 bg-gray-200';
+            headerRow.appendChild(newHeaderCell);
+
+            for (let i = 1; i < table.rows.length; i++) {
+                const newCell = table.rows[i].insertCell(-1);
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.name = `col${newColNumber}_${i}`;
+                input.required = true;
+                input.className = 'w-full p-2 border border-gray-300 rounded';
+                newCell.appendChild(input);
+                newCell.className = 'p-2 border border-gray-300';
+            }
+        }
+
+        function addPage() {
+            pageCount++;
+            const pageId = `page${pageCount}`;
+            const tabId = `tab${pageCount}`;
+
+            const tabs = document.getElementById('tabs');
+            const newPageName = document.getElementById('newPageName').value.trim() || `Page ${pageCount}`;
+            const newTab = document.createElement('li');
+            newTab.className = 'mr-1';
+            newTab.innerHTML = `<a href="#${pageId}" id="${tabId}" class="bg-white inline-block py-2 px-4 text-blue-500 font-semibold" onclick="showPage(event, '${pageId}')">${newPageName}</a>`;
+            tabs.appendChild(newTab);
+
+            const tabContent = document.getElementById('tab-content');
+            const newPage = document.createElement('div');
+            newPage.className = 'page bg-white p-4 rounded shadow';
+            newPage.id = pageId;
+            newPage.innerHTML = `
+                <h2 class="text-2xl font-bold mb-4">${newPageName}</h2>
+                <form class="space-y-4">
+                    <div>
+                        <label for="name${pageCount}" class="block text-lg font-medium">Name:</label>
+                        <input type="text" id="name${pageCount}" name="name${pageCount}" required class="mt-1 block w-full p-2 border border-gray-300 rounded">
+                    </div>
+
+                    <div>
+                        <label for="email${pageCount}" class="block text-lg font-medium">Email:</label>
+                        <input type="email" id="email${pageCount}" name="email${pageCount}" required class="mt-1 block w-full p-2 border border-gray-300 rounded">
+                    </div>
+
+                    <table id="table${pageCount}" class="w-full mt-4 border border-gray-300">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="p-2 border border-gray-300">Column 1</th>
+                                <th class="p-2 border border-gray-300">Column 2</th>
+                                <th class="p-2 border border-gray-300">Column 3</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="p-2 border border-gray-300"><input type="text" name="col1_1" required class="w-full p-2 border border-gray-300 rounded"></td>
+                                <td class="p-2 border border-gray-300"><input type="text" name="col2_1" required class="w-full p-2 border border-gray-300 rounded"></td>
+                                <td class="p-2 border border-gray-300"><input type="text" name="col3_1" required class="w-full p-2 border border-gray-300 rounded"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="flex space-x-4 mt-4">
+                        <button type="button" onclick="addRow(${pageCount})" class="bg-blue-500 text-white px-4 py-2 rounded">Add Row</button>
+                        <button type="button" onclick="addColumn(${pageCount})" class="bg-blue-500 text-white px-4 py-2 rounded">Add Column</button>
+                        <button type="button" onclick="removePage(${pageCount})" class="bg-red-500 text-white px-4 py-2 rounded">Remove Page</button>
+                    </div>
+                </form>
+            `;
+            tabContent.appendChild(newPage);
+
+            // Make the new page tab active
+            document.querySelectorAll('.tabs a').forEach(tab => tab.classList.remove('bg-gray-200'));
+            document.querySelectorAll('.tab-content .page').forEach(page => page.classList.remove('active'));
+            document.getElementById(tabId).classList.add('bg-gray-200');
+            newPage.classList.add('active');
+        }
+
+        function showPage(event, pageId) {
+            event.preventDefault();
+            document.querySelectorAll('.tabs a').forEach(tab => tab.classList.remove('bg-gray-200'));
+            document.querySelectorAll('.tab-content .page').forEach(page => page.classList.remove('active'));
+            event.target.classList.add('bg-gray-200');
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        function removePage(pageNumber) {
+            const pageId = `page${pageNumber}`;
+            const tabId = `tab${pageNumber}`;
+
+            const page = document.getElementById(pageId);
+            const tab = document.getElementById(tabId).parentNode;
+
+            page.remove();
+            tab.remove();
+
+            // If the removed page was active, make the first page active
+            if (document.querySelectorAll('.tabs a.bg-gray-200').length === 0) {
+                const firstTab = document.querySelector('.tabs a');
+                const firstPage = document.querySelector('.tab-content .page');
+                if (firstTab && firstPage) {
+                    firstTab.classList.add('bg-gray-200');
+                    firstPage.classList.add('active');
+                }
+            }
+        }
+
+        function submitAll() {
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                if (!form.reportValidity()) {
+                    alert('Please fill out all required fields.');
+                    return;
+                }
+            });
+            alert('All forms submitted successfully!');
+        }
+    </script>
+</body>
+</html>
